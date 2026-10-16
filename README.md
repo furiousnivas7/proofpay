@@ -18,7 +18,36 @@ This project uses PayPal Sandbox for testing. It is a demonstration of milestone
 
 ## Project status
 
-ProofPay is in development. Setup instructions and implemented features will be added as the project takes shape.
+ProofPay is in development. Implemented so far: a sandbox-only PayPal client and a day-1 check that the sandbox supports the payment flow.
+
+## Day-1 PayPal Sandbox check
+
+`scripts/sandbox_check.py` confirms your PayPal Sandbox app can do the flow ProofPay depends on:
+
+1. **Authorize → capture:** create an order, approve it as the sandbox buyer, authorize, capture, replay the capture with the same `PayPal-Request-Id` to confirm idempotency, and verify the capture server-side.
+2. **Authorize → void:** create and authorize a second order, void it, and verify it is `VOIDED` server-side.
+
+### Setup
+
+1. In the [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/), create a **Sandbox** REST app and note its client ID and secret. Under *Testing Tools → Sandbox Accounts*, note the login of the default **Personal** (buyer) account.
+2. Install and configure:
+
+   ```bash
+   python -m venv .venv && source .venv/bin/activate
+   pip install -r requirements-dev.txt
+   cp .env.example .env   # then add your sandbox client ID and secret
+   ```
+
+3. Run the check and follow the prompts (you approve each order in the browser with the sandbox buyer account):
+
+   ```bash
+   python scripts/sandbox_check.py               # both flows
+   python scripts/sandbox_check.py --flow void   # one flow
+   ```
+
+4. Run the unit tests (no network or credentials needed): `pytest`
+
+The client refuses any host other than `api-m.sandbox.paypal.com`, and credentials are read from `.env`, which git ignores.
 
 ## License
 
