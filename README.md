@@ -18,7 +18,36 @@ This project uses PayPal Sandbox for testing. It is a demonstration of milestone
 
 ## Project status
 
-ProofPay is in development. Implemented so far: a sandbox-only PayPal client and a day-1 check that the sandbox supports the payment flow.
+ProofPay is in development (PayPal AI Hackathon 2026). Implemented so far:
+
+- A sandbox-only PayPal client and a day-1 check that the sandbox supports the payment flow.
+- **Phase 1 backend:** a FastAPI server with a SQLite database, the milestone status flow, PayPal order, authorize, capture and void with retry-safe request IDs, verified and de-duplicated PayPal webhooks, hold expiry tracking, and two demo logins.
+
+Next: the AI requirement checker (Phase 2), then the client and freelancer screens (Phase 3).
+
+## Quick start
+
+```bash
+bash scripts/setup.sh                     # venv, packages, .env, database, unit tests
+source .venv/bin/activate
+uvicorn proofpay.main:app --reload        # API docs at http://localhost:8000/docs
+```
+
+Log in as `client` / `client-demo` or `freelancer` / `freelancer-demo`.
+
+**How to test everything, step by step:** [docs/TESTING.md](docs/TESTING.md).
+
+### Milestone status flow
+
+```
+DRAFT -> CRITERIA_AGREED -> AUTHORIZED -> SUBMITTED -> VERIFIED -> CAPTURED
+                                              ^            |
+                                              +-- REVISION_REQUESTED
+
+VOIDED or EXPIRED can follow any status in which PayPal holds the funds.
+```
+
+Only the client can capture or void. The checker writes a report and never moves money.
 
 ## Day-1 PayPal Sandbox check
 

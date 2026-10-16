@@ -176,3 +176,17 @@ class PayPalClient:
 
     def void_authorization(self, authorization_id: str, request_id: str) -> dict:
         return self._request("POST", f"/v2/payments/authorizations/{authorization_id}/void", request_id=request_id)
+
+    def verify_webhook_signature(self, headers: dict[str, str], webhook_id: str, event: dict) -> str:
+        """Ask PayPal whether a webhook delivery is genuine. Returns "SUCCESS" or "FAILURE"."""
+        body = {
+            "transmission_id": headers.get("paypal-transmission-id", ""),
+            "transmission_time": headers.get("paypal-transmission-time", ""),
+            "cert_url": headers.get("paypal-cert-url", ""),
+            "auth_algo": headers.get("paypal-auth-algo", ""),
+            "transmission_sig": headers.get("paypal-transmission-sig", ""),
+            "webhook_id": webhook_id,
+            "webhook_event": event,
+        }
+        result = self._request("POST", "/v1/notifications/verify-webhook-signature", json=body)
+        return result.get("verification_status", "FAILURE")
